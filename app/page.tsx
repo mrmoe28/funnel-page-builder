@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Sparkles, Github, Download, Loader2, Link2, Wand2 } from "lucide-react";
 import { addToFunnelHistory } from "@/components/FunnelHistorySidebar";
+import { ImageUpload } from "@/components/ImageUpload";
 
 type GenResp = {
   slug: string;
@@ -28,6 +29,7 @@ export default function Home() {
   const [tagline, setTagline] = useState("");
   const [subhead, setSubhead] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
+  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [slug, setSlug] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -52,14 +54,34 @@ export default function Home() {
       return;
     }
     setBusy(true);
-    setMsg("Generating screenshots & page...");
+    setMsg("Uploading images & generating screenshots...");
     try {
+      // Convert uploaded images to base64
+      const uploadedImagesBase64 = await Promise.all(
+        uploadedImages.map(async (file) => {
+          return new Promise<{ name: string; data: string; type: string }>(
+            (resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                resolve({
+                  name: file.name,
+                  data: reader.result as string,
+                  type: file.type,
+                });
+              };
+              reader.readAsDataURL(file);
+            }
+          );
+        })
+      );
+
       const data: GenResp = await call("/api/generate", {
         appName,
         targetUrl,
         tagline,
         subhead,
         logoUrl,
+        uploadedImages: uploadedImagesBase64,
       });
       setSlug(data.slug);
       setPreviewUrl(data.previewUrl);
@@ -230,13 +252,25 @@ export default function Home() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="logoUrl">Logo URL</Label>
+                <Label htmlFor="logoUrl">Logo URL (Optional)</Label>
                 <Input
                   id="logoUrl"
                   type="url"
                   placeholder="https://example.com/logo.svg"
                   value={logoUrl}
                   onChange={(e) => setLogoUrl(e.target.value)}
+                />
+              </div>
+
+              {/* Image Upload Section */}
+              <div className="space-y-2">
+                <Label>Upload Custom Images (Optional)</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Add your own images to showcase alongside screenshots
+                </p>
+                <ImageUpload
+                  onImagesChange={setUploadedImages}
+                  maxImages={5}
                 />
               </div>
             </div>

@@ -21,7 +21,7 @@ interface PageScreenshot {
 
 export async function POST(req: NextRequest) {
   try {
-    const { appName, targetUrl, tagline, subhead, logoUrl } =
+    const { appName, targetUrl, tagline, subhead, logoUrl, uploadedImages = [] } =
       await req.json();
 
     if (!appName || !targetUrl) {
@@ -32,6 +32,9 @@ export async function POST(req: NextRequest) {
     }
 
     console.log(`🚀 Starting funnel generation for: ${targetUrl}`);
+    if (uploadedImages.length > 0) {
+      console.log(`📤 ${uploadedImages.length} custom images uploaded`);
+    }
 
     const slug = slugify(appName);
     const base = path.join(process.cwd(), "public", "funnels", slug);
@@ -124,6 +127,23 @@ export async function POST(req: NextRequest) {
     await browser.close();
 
     console.log(`✅ Captured ${screenshots.length} pages`);
+
+    // Save uploaded images
+    const uploadedImagePaths: string[] = [];
+    if (uploadedImages && uploadedImages.length > 0) {
+      console.log("💾 Saving uploaded images...");
+      for (let i = 0; i < uploadedImages.length; i++) {
+        const image = uploadedImages[i];
+        const base64Data = image.data.split(",")[1]; // Remove data:image/png;base64, prefix
+        const buffer = Buffer.from(base64Data, "base64");
+        const ext = image.type.split("/")[1] || "png";
+        const filename = `uploaded-${i}.${ext}`;
+        const filepath = path.join(assets, filename);
+        await fs.promises.writeFile(filepath, buffer);
+        uploadedImagePaths.push(`/funnels/${slug}/assets/${filename}`);
+      }
+      console.log(`  Saved ${uploadedImagePaths.length} uploaded images`);
+    }
 
     const safeTitle = title || appName;
     const safeDesc =
@@ -372,6 +392,32 @@ export async function POST(req: NextRequest) {
             <div class="p-4">
               <p class="text-sm font-semibold text-white/90">${screenshot.title}</p>
             </div>
+          </div>
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+  </section>
+  `
+      : ""
+  }
+
+  ${
+    uploadedImagePaths.length > 0
+      ? `
+  <!-- Custom Uploaded Images Section -->
+  <section class="mt-16">
+    <h2 class="text-3xl font-bold mb-8 text-center fade-in-up">
+      Featured Images
+    </h2>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      ${uploadedImagePaths
+        .map(
+          (imagePath, idx) => `
+        <div class="scale-in" style="transition-delay: ${(idx + 1) * 0.1}s;">
+          <div class="glass rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
+            <img src="${imagePath}" alt="Featured Image ${idx + 1}" class="w-full h-auto" />
           </div>
         </div>
       `
