@@ -1,10 +1,12 @@
 import "../styles/globals.css";
 import React from "react";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Navbar } from "@/components/navbar";
 
 export const metadata = {
   title: "Funnel Page Builder",
   description:
-    "Paste a URL → generate a funnel splash with screenshots & CTA.",
+    "Transform any URL into a beautiful funnel splash page with automated screenshots.",
 };
 
 export default function RootLayout({
@@ -13,9 +15,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen">
-        <div className="mx-auto max-w-6xl px-6 py-8">{children}</div>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Navbar />
+          <main className="container mx-auto px-6 py-8">{children}</main>
+        </ThemeProvider>
       </body>
     </html>
   );
