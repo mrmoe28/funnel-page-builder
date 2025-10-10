@@ -1,0 +1,28 @@
+{
+  "name": "funnel-page-builder",
+  "version": "0.1.0",
+  "description": "URL-to-Funnel generator: paste a URL, generate a branded funnel splash page with screenshots",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "generate": "node scripts/generate.js",
+    "start": "npx http-server -p 4321 -c-1 .",
+    "postinstall": "npx playwright install --with-deps chromium"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.47.2"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "funnel",
+    "landing-page",
+    "playwright",
+    "screenshot",
+    "github-pages"
+  ],
+  "author": "mrmoe28",
+  "license": "MIT"
+}
