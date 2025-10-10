@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
 </html>`;
 
     await fs.promises.writeFile(path.join(base, "index.html"), html, "utf8");
-    const previewUrl = `/funnels/${slug}/`;
+    const previewUrl = `/funnels/${slug}/index.html`;
 
     return NextResponse.json({
       slug,
