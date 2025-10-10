@@ -4,23 +4,14 @@ import fs from "fs";
 import { slugify } from "@/lib/slug";
 import { launchForEnv } from "@/lib/ensureChromium";
 import { devices } from "@playwright/test";
-import { discoverPages, type DiscoveredPage } from "@/lib/pageDiscovery";
-import { extractBrandColors } from "@/lib/colorExtraction";
 
 async function ensureDir(p: string) {
   await fs.promises.mkdir(p, { recursive: true });
 }
 
-interface PageScreenshot {
-  url: string;
-  title: string;
-  desktopPath: string;
-  mobilePath: string;
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const { appName, targetUrl, tagline, subhead, logoUrl } =
+    const { appName, targetUrl, tagline, subhead, primary, bg, logoUrl } =
       await req.json();
 
     if (!appName || !targetUrl) {
@@ -30,91 +21,44 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log(`🚀 Starting funnel generation for: ${targetUrl}`);
-
     const slug = slugify(appName);
     const base = path.join(process.cwd(), "public", "funnels", slug);
     const assets = path.join(base, "assets");
     await ensureDir(assets);
 
     const browser = await launchForEnv();
-    const screenshots: PageScreenshot[] = [];
 
-    // Step 1: Open homepage and discover pages
-    console.log("📄 Discovering pages...");
+    // Desktop screenshot
     const ctx = await browser.newContext({
       viewport: { width: 1440, height: 900 },
     });
     const page = await ctx.newPage();
     await page.goto(targetUrl, { waitUntil: "networkidle", timeout: 60000 });
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(1200);
+    const desk = path.join(assets, "screenshot-desktop.png");
+    await page.screenshot({ path: desk, fullPage: true });
 
-    // Extract metadata from homepage
     const title = await page.title();
     const metaDesc = await page
       .locator("meta[name='description']")
       .getAttribute("content")
       .catch(() => null);
-
-    // Step 2: Auto-extract brand colors
-    console.log("🎨 Extracting brand colors...");
-    const colors = await extractBrandColors(page);
-    const primaryCss = colors.primary;
-    const bgCss = colors.background;
-    console.log(`  Primary: ${primaryCss}, Background: ${bgCss}`);
-
-    // Step 3: Discover additional pages
-    const discoveredPages = await discoverPages(page, targetUrl, 6);
-    console.log(`  Found ${discoveredPages.length} pages to screenshot`);
-
-    // Step 4: Screenshot all discovered pages
-    for (let i = 0; i < discoveredPages.length; i++) {
-      const discoveredPage = discoveredPages[i];
-      console.log(`📸 ${i + 1}/${discoveredPages.length}: ${discoveredPage.title}`);
-
-      try {
-        // Navigate to page if not homepage
-        if (i > 0) {
-          await page.goto(discoveredPage.url, {
-            waitUntil: "networkidle",
-            timeout: 30000,
-          });
-          await page.waitForTimeout(1200);
-        }
-
-        // Desktop screenshot
-        const deskPath = path.join(assets, `page-${i}-desktop.png`);
-        await page.screenshot({ path: deskPath, fullPage: true });
-
-        // Mobile screenshot
-        const iPhone = devices["iPhone 14 Pro"];
-        const mctx = await browser.newContext({ ...iPhone });
-        const mpage = await mctx.newPage();
-        await mpage.goto(discoveredPage.url, {
-          waitUntil: "networkidle",
-          timeout: 30000,
-        });
-        await mpage.waitForTimeout(1200);
-        const mobPath = path.join(assets, `page-${i}-mobile.png`);
-        await mpage.screenshot({ path: mobPath, fullPage: true });
-        await mctx.close();
-
-        screenshots.push({
-          url: discoveredPage.url,
-          title: discoveredPage.title,
-          desktopPath: `/funnels/${slug}/assets/page-${i}-desktop.png`,
-          mobilePath: `/funnels/${slug}/assets/page-${i}-mobile.png`,
-        });
-      } catch (e) {
-        console.error(`  ⚠️ Failed to screenshot ${discoveredPage.title}:`, e);
-      }
-    }
-
     await ctx.close();
+
+    // Mobile screenshot
+    const iPhone = devices["iPhone 14 Pro"];
+    const mctx = await browser.newContext({ ...iPhone });
+    const mpage = await mctx.newPage();
+    await mpage.goto(targetUrl, { waitUntil: "networkidle", timeout: 60000 });
+    await mpage.waitForTimeout(1200);
+    const mob = path.join(assets, "screenshot-mobile.png");
+    await mpage.screenshot({ path: mob, fullPage: true });
+    await mctx.close();
     await browser.close();
 
-    console.log(`✅ Captured ${screenshots.length} pages`);
-
+    const primaryCss =
+      primary || process.env.NEXT_PUBLIC_DEFAULT_PRIMARY || "#0ea5e9";
+    const bgCss = bg || process.env.NEXT_PUBLIC_DEFAULT_BG || "#0b1220";
     const safeTitle = title || appName;
     const safeDesc =
       metaDesc || tagline || "See features at a glance. Try it in seconds.";
@@ -334,53 +278,21 @@ export async function POST(req: NextRequest) {
       </p>
     </div>
 
-    <!-- Right: Homepage Screenshot with Floating Animation -->
+    <!-- Right: Screenshot with Floating Animation -->
     <div class="fade-in-up float" style="transition-delay: 0.3s;">
       <div class="glass-strong rounded-3xl overflow-hidden shadow-2xl">
-        <img src="${screenshots[0]?.desktopPath || './assets/page-0-desktop.png'}" alt="${appName} Homepage" class="w-full h-auto" />
+        <img src="./assets/screenshot-desktop.png" alt="Screenshot ${appName}" class="w-full h-auto" />
       </div>
-      <p class="text-center text-sm text-white/60 mt-3">Homepage Preview</p>
     </div>
   </section>
 
-  ${
-    screenshots.length > 1
-      ? `
-  <!-- Additional Pages Gallery -->
-  <section class="mt-16">
-    <h2 class="text-3xl font-bold mb-8 text-center fade-in-up">
-      More Pages from ${appName}
-    </h2>
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      ${screenshots
-        .slice(1)
-        .map(
-          (screenshot, idx) => `
-        <div class="scale-in" style="transition-delay: ${(idx + 1) * 0.1}s;">
-          <div class="glass rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
-            <img src="${screenshot.desktopPath}" alt="${screenshot.title}" class="w-full h-auto" />
-            <div class="p-4">
-              <p class="text-sm font-semibold text-white/90">${screenshot.title}</p>
-            </div>
-          </div>
-        </div>
-      `
-        )
-        .join("")}
-    </div>
-  </section>
-  `
-      : ""
-  }
-
-  <!-- Mobile Screenshots Section -->
+  <!-- Features Section -->
   <section class="mt-24 md:mt-32 grid md:grid-cols-3 gap-8">
-    <!-- Homepage Mobile Screenshot -->
+    <!-- Mobile Screenshot -->
     <div class="scale-in">
       <div class="glass rounded-2xl overflow-hidden shadow-xl">
-        <img src="${screenshots[0]?.mobilePath || './assets/page-0-mobile.png'}" alt="${appName} Mobile" class="w-full h-auto mx-auto" style="max-width: 300px;" />
+        <img src="./assets/screenshot-mobile.png" alt="Mobile screenshot" class="w-full h-auto mx-auto" style="max-width: 300px;" />
       </div>
-      <p class="text-center text-sm text-white/60 mt-2">Mobile View</p>
     </div>
 
     <!-- Features List -->

@@ -26,8 +26,6 @@ export default function Home() {
   const [appName, setAppName] = useState("");
   const [tagline, setTagline] = useState("");
   const [subhead, setSubhead] = useState("");
-  const [primary, setPrimary] = useState("#a855f7");
-  const [bg, setBg] = useState("#0b1220");
   const [logoUrl, setLogoUrl] = useState("");
   const [slug, setSlug] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -60,8 +58,6 @@ export default function Home() {
         targetUrl,
         tagline,
         subhead,
-        primary,
-        bg,
         logoUrl,
       });
       setSlug(data.slug);
@@ -217,44 +213,10 @@ export default function Home() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="primary">Primary Color</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="primary"
-                      type="color"
-                      value={primary}
-                      onChange={(e) => setPrimary(e.target.value)}
-                      className="h-10 w-16"
-                    />
-                    <Input
-                      type="text"
-                      value={primary}
-                      onChange={(e) => setPrimary(e.target.value)}
-                      className="flex-1 font-mono text-sm"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="bg">Background</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="bg"
-                      type="color"
-                      value={bg}
-                      onChange={(e) => setBg(e.target.value)}
-                      className="h-10 w-16"
-                    />
-                    <Input
-                      type="text"
-                      value={bg}
-                      onChange={(e) => setBg(e.target.value)}
-                      className="flex-1 font-mono text-sm"
-                    />
-                  </div>
-                </div>
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                <p className="text-sm text-muted-foreground">
+                  🎨 <strong>Colors auto-detected!</strong> We'll extract your brand's primary color and background from the website automatically.
+                </p>
               </div>
 
               <div className="space-y-2">
