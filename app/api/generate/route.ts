@@ -82,63 +82,329 @@ export async function POST(req: NextRequest) {
 <link rel="icon" href="${logoUrl || "data:,"}">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-:root{ --primary:${primaryCss}; --bg:${bgCss}; }
-.btn{ background: var(--primary); }
-.hero-bg {
-  background: radial-gradient(1200px 600px at 20% 10%, rgba(14,165,233,.25), transparent 60%),
-              radial-gradient(900px 500px at 80% 20%, rgba(14,165,233,.15), transparent 55%),
-              var(--bg);
+:root{
+  --primary: ${primaryCss};
+  --bg: ${bgCss};
+}
+
+/* Animated Gradient Background */
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animated-gradient-bg {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
+    linear-gradient(135deg, ${bgCss} 0%, ${bgCss} 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Primary CTA Button with Micro-interactions */
+.primary-cta {
+  background: linear-gradient(135deg, ${primaryCss} 0%, ${primaryCss} 100%);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+}
+
+.primary-cta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.primary-cta:hover::before {
+  left: 100%;
+}
+
+.primary-cta:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 25px rgba(168, 85, 247, 0.6);
+}
+
+.primary-cta:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Secondary CTA */
+.secondary-cta {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.secondary-cta:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Scroll Animation Classes */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.fade-in-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-in {
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+}
+
+.scale-in {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.scale-in.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Floating Animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+.float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Pulse Glow */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); }
+  50% { box-shadow: 0 0 40px rgba(168, 85, 247, 0.8); }
+}
+
+.pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .fade-in-up {
+    transform: translateY(20px);
+  }
 }
 </style>
 </head>
-<body class="min-h-screen text-white hero-bg">
-<header class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
-  <div class="text-xl font-bold tracking-wider">${logoUrl ? `<img src="${logoUrl}" class="h-8 w-auto" alt="Logo"/>` : appName}</div>
-  <a href="#" id="cta-top" class="btn px-4 py-2 rounded-xl font-semibold hover:opacity-90 transition">Try ${appName}</a>
-</header>
-<main class="max-w-6xl mx-auto px-6 py-10">
-  <section class="grid md:grid-cols-2 gap-10 items-center">
-    <div>
-      <h1 class="text-4xl md:text-5xl font-extrabold leading-tight">${appName}</h1>
-      <p class="mt-4 text-xl text-white/80">${tagline || safeDesc}</p>
-      ${subhead ? `<p class="mt-2 text-white/60">${subhead}</p>` : ""}
-      <div class="mt-6 flex gap-3">
-        <a id="cta-main" href="#" class="btn px-6 py-3 rounded-2xl text-lg font-semibold hover:opacity-90 transition">Open App</a>
-        <a href="${targetUrl}" class="px-6 py-3 rounded-2xl border border-white/20 text-lg hover:bg-white/10 transition">Visit Original</a>
-      </div>
-      <p class="mt-3 text-sm text-white/50">UTM & query params are preserved on click.</p>
+<body class="min-h-screen text-white animated-gradient-bg">
+
+<!-- Header with Glassmorphism -->
+<header class="sticky top-0 z-50 glass">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="text-xl font-bold tracking-wider fade-in visible">
+      ${logoUrl ? `<img src="${logoUrl}" class="h-8 w-auto" alt="Logo"/>` : appName}
     </div>
-    <div class="rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-2xl">
-      <img src="./assets/screenshot-desktop.png" alt="Screenshot ${appName}" class="w-full h-auto" />
+    <a href="#" id="cta-top" class="primary-cta px-5 py-2.5 rounded-xl font-semibold text-white text-sm">
+      Try ${appName} Free
+    </a>
+  </div>
+</header>
+
+<!-- Hero Section -->
+<main class="max-w-6xl mx-auto px-6 py-16 md:py-24">
+  <section class="grid md:grid-cols-2 gap-12 items-center">
+    <!-- Left: Content -->
+    <div class="space-y-6">
+      <div class="inline-block px-4 py-2 glass rounded-full text-sm font-medium fade-in-up">
+        ✨ New & Trending
+      </div>
+
+      <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight fade-in-up" style="transition-delay: 0.1s;">
+        ${appName}
+      </h1>
+
+      <p class="text-xl md:text-2xl text-white/90 leading-relaxed fade-in-up" style="transition-delay: 0.2s;">
+        ${tagline || safeDesc}
+      </p>
+
+      ${subhead ? `<p class="text-lg text-white/70 fade-in-up" style="transition-delay: 0.3s;">${subhead}</p>` : ""}
+
+      <!-- CTA Buttons -->
+      <div class="flex flex-col sm:flex-row gap-4 pt-4 fade-in-up" style="transition-delay: 0.4s;">
+        <a id="cta-main" href="#" class="primary-cta px-8 py-4 rounded-2xl text-lg font-bold text-white text-center pulse-glow">
+          🚀 Get Started Now
+        </a>
+        <a href="${targetUrl}" class="secondary-cta px-8 py-4 rounded-2xl text-lg font-semibold text-center">
+          View Demo
+        </a>
+      </div>
+
+      <p class="text-sm text-white/50 fade-in-up" style="transition-delay: 0.5s;">
+        ⚡ No credit card required • ✅ Free forever plan
+      </p>
+    </div>
+
+    <!-- Right: Screenshot with Floating Animation -->
+    <div class="fade-in-up float" style="transition-delay: 0.3s;">
+      <div class="glass-strong rounded-3xl overflow-hidden shadow-2xl">
+        <img src="./assets/screenshot-desktop.png" alt="Screenshot ${appName}" class="w-full h-auto" />
+      </div>
     </div>
   </section>
-  <section class="mt-14 grid md:grid-cols-3 gap-6">
-    <div class="col-span-1 rounded-xl overflow-hidden ring-1 ring-white/10">
-      <img src="./assets/screenshot-mobile.png" alt="Mobile screenshot" class="w-full h-auto" />
+
+  <!-- Features Section -->
+  <section class="mt-24 md:mt-32 grid md:grid-cols-3 gap-8">
+    <!-- Mobile Screenshot -->
+    <div class="scale-in">
+      <div class="glass rounded-2xl overflow-hidden shadow-xl">
+        <img src="./assets/screenshot-mobile.png" alt="Mobile screenshot" class="w-full h-auto mx-auto" style="max-width: 300px;" />
+      </div>
     </div>
-    <div class="col-span-2 rounded-xl p-6 ring-1 ring-white/10 bg-white/5">
-      <h2 class="text-2xl font-bold mb-3">Why this app?</h2>
-      <ul class="space-y-2 text-white/80 list-disc pl-5">
-        <li>Fast value proposition above the fold</li>
-        <li>Clear CTA to the live app</li>
-        <li>SEO/OG meta for richer shares</li>
-        <li>UTM passthrough for attribution</li>
-      </ul>
+
+    <!-- Features List -->
+    <div class="col-span-2 space-y-6 scale-in" style="transition-delay: 0.2s;">
+      <div class="glass-strong rounded-2xl p-8">
+        <h2 class="text-3xl md:text-4xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+          Why Choose ${appName}?
+        </h2>
+        <div class="space-y-4">
+          <div class="flex items-start gap-4 group">
+            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold group-hover:scale-110 transition-transform">
+              ✓
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">Instant Value</h3>
+              <p class="text-white/70">Get started in seconds with our intuitive interface</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4 group">
+            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold group-hover:scale-110 transition-transform">
+              ⚡
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">Lightning Fast</h3>
+              <p class="text-white/70">Optimized for speed and performance</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4 group">
+            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-white font-bold group-hover:scale-110 transition-transform">
+              🎯
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">Track Everything</h3>
+              <p class="text-white/70">UTM parameters preserved for perfect attribution</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4 group">
+            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-bold group-hover:scale-110 transition-transform">
+              📱
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">Mobile Ready</h3>
+              <p class="text-white/70">Looks perfect on every device</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Final CTA -->
+      <div class="glass-strong rounded-2xl p-8 text-center">
+        <h3 class="text-2xl font-bold mb-4">Ready to get started?</h3>
+        <p class="text-white/80 mb-6">Join thousands of users already using ${appName}</p>
+        <a href="#" class="cta-final primary-cta inline-block px-10 py-4 rounded-2xl text-lg font-bold text-white">
+          Start Free Trial →
+        </a>
+      </div>
     </div>
   </section>
 </main>
-<footer class="max-w-6xl mx-auto px-6 py-10 text-white/50 text-sm">
-  © ${new Date().getFullYear()} ${appName}. All rights reserved.
+
+<!-- Footer -->
+<footer class="max-w-6xl mx-auto px-6 py-12 mt-24">
+  <div class="glass rounded-2xl p-8 text-center text-white/60 text-sm">
+    © ${new Date().getFullYear()} ${appName}. All rights reserved.
+  </div>
 </footer>
+
+<!-- Scripts -->
 <script>
+  // UTM Parameter Preservation
   const CTA_URL = ${JSON.stringify(targetUrl)};
   const params = window.location.search || "";
   const hash = window.location.hash || "";
   const finalUrl = CTA_URL + params + hash;
-  for (const id of ["cta-top","cta-main"]) {
+
+  const ctaElements = ["cta-top", "cta-main"];
+  const ctaFinal = document.querySelector(".cta-final");
+
+  ctaElements.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.href = finalUrl;
-  }
+  });
+
+  if (ctaFinal) ctaFinal.href = finalUrl;
+
+  // Scroll-Triggered Animations (Intersection Observer)
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  // Observe all animated elements
+  document.querySelectorAll('.fade-in-up, .fade-in, .scale-in').forEach(el => {
+    observer.observe(el);
+  });
+
+  // Add visible class to header immediately
+  document.querySelectorAll('header .fade-in').forEach(el => {
+    el.classList.add('visible');
+  });
 </script>
 </body>
 </html>`;
