@@ -3,19 +3,42 @@
   "version": "0.1.0",
   "description": "URL-to-Funnel generator: paste a URL, generate a branded funnel splash page with screenshots",
   "private": true,
-  "type": "module",
   "engines": {
     "node": ">=18"
   },
   "scripts": {
-    "generate": "node scripts/generate.js",
-    "start": "npx http-server -p 4321 -c-1 .",
-    "postinstall": "npx playwright install --with-deps chromium"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:format": "prettier --write .",
+    "postinstall": "npx playwright install --with-deps chromium || true"
   },
   "dependencies": {
-    "@playwright/test": "^1.47.2"
+    "next": "^15.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@playwright/test": "^1.47.2",
+    "playwright-core": "^1.47.2",
+    "@sparticuz/chromium": "^131.0.0",
+    "octokit": "^4.0.2",
+    "archiver": "^7.0.1",
+    "sharp": "^0.33.5"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.6",
+    "@types/react-dom": "^19.0.2",
+    "@types/archiver": "^6.0.2",
+    "tailwindcss": "^3.4.17",
+    "postcss": "^8.4.49",
+    "autoprefixer": "^10.4.20",
+    "prettier": "^3.4.2",
+    "prettier-plugin-tailwindcss": "^0.6.9",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "^15.1.6"
+  },
   "keywords": [
     "funnel",
     "landing-page",
