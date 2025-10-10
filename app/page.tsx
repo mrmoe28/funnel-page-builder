@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Sparkles, Github, Download, Loader2, Link2, Wand2 } from "lucide-react";
+import { addToFunnelHistory } from "@/components/FunnelHistorySidebar";
 
 type GenResp = {
   slug: string;
@@ -63,6 +64,15 @@ export default function Home() {
       setSlug(data.slug);
       setPreviewUrl(data.previewUrl);
       setMsg("✓ Generated successfully!");
+
+      // Add to history
+      addToFunnelHistory({
+        slug: data.slug,
+        appName,
+        targetUrl,
+        previewUrl: data.previewUrl,
+        thumbnail: data.paths?.desktop || `/funnels/${data.slug}/assets/page-0-desktop.png`,
+      });
     } catch (e: any) {
       setMsg("Error: " + (e.message || "Failed"));
     } finally {

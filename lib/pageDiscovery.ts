@@ -131,56 +131,55 @@ async function crawlNavigationLinks(
 ): Promise<DiscoveredPage[]> {
   const pages: DiscoveredPage[] = [];
 
-  // Extract navigation links
+  // Extract ALL links, not just navigation
   const links = await page.evaluate(() => {
-    const navSelectors = [
-      "nav a",
-      "header a",
-      '[role="navigation"] a',
-      ".nav a",
-      ".navigation a",
-      ".menu a",
-    ];
-
-    const foundLinks: Array<{ href: string; text: string }> = [];
+    const allLinks: Array<{ href: string; text: string }> = [];
     const seen = new Set<string>();
 
-    for (const selector of navSelectors) {
-      const elements = Array.from(document.querySelectorAll(selector));
-      for (const el of elements) {
-        const href = (el as HTMLAnchorElement).href;
-        const text =
-          (el as HTMLElement).textContent?.trim() || "Untitled Page";
+    // Get ALL links on the page
+    const linkElements = Array.from(document.querySelectorAll("a[href]"));
 
-        if (href && !seen.has(href)) {
-          seen.add(href);
-          foundLinks.push({ href, text });
-        }
+    for (const el of linkElements) {
+      const href = (el as HTMLAnchorElement).href;
+      const text = (el as HTMLElement).textContent?.trim() || "";
+
+      if (href && !seen.has(href) && text) {
+        seen.add(href);
+        allLinks.push({ href, text });
       }
     }
 
-    return foundLinks;
+    return allLinks;
   });
 
   // Filter to same domain, unique, and limit
   const seen = new Set<string>();
+  const skipKeywords = ["#", "javascript:", "mailto:", "tel:", "login", "signup", "sign-up", "sign-in"];
+
   for (const link of links) {
     if (pages.length >= maxPages) break;
 
     try {
       const url = new URL(link.href);
 
-      // Only same domain, no fragments, no duplicates
+      // Skip certain URLs
+      const shouldSkip = skipKeywords.some(keyword =>
+        link.href.toLowerCase().includes(keyword)
+      );
+
+      // Only same domain, no duplicates, skip homepage
       if (
         url.hostname === domain &&
-        !url.hash &&
+        !shouldSkip &&
         !seen.has(url.pathname) &&
-        url.pathname !== "/" // Skip homepage (already added)
+        url.pathname !== "/" && // Skip homepage
+        url.pathname !== "" &&
+        link.text.length > 2 // Meaningful text
       ) {
         seen.add(url.pathname);
         pages.push({
-          url: link.href,
-          title: link.text.slice(0, 50), // Limit title length
+          url: link.href.split('#')[0], // Remove fragments
+          title: link.text.slice(0, 50),
           type: "page",
         });
       }
@@ -189,6 +188,7 @@ async function crawlNavigationLinks(
     }
   }
 
+  console.log(`  Found ${pages.length} valid links to screenshot`);
   return pages;
 }
 

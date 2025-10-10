@@ -2,6 +2,7 @@ import "../styles/globals.css";
 import React from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
+import { FunnelHistorySidebar } from "@/components/FunnelHistorySidebar";
 
 export const metadata = {
   title: "Funnel Page Builder",
@@ -24,7 +25,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Navbar />
-          <main className="container mx-auto px-6 py-8">{children}</main>
+          <FunnelHistorySidebar />
+          <main className="container mx-auto px-6 py-8 ml-80 transition-all duration-300">
+            {children}
+          </main>
         </ThemeProvider>
       </body>
     </html>

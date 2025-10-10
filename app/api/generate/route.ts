@@ -6,6 +6,7 @@ import { launchForEnv } from "@/lib/ensureChromium";
 import { devices } from "@playwright/test";
 import { discoverPages, type DiscoveredPage } from "@/lib/pageDiscovery";
 import { extractBrandColors } from "@/lib/colorExtraction";
+import { extractPageContent } from "@/lib/contentExtraction";
 
 async function ensureDir(p: string) {
   await fs.promises.mkdir(p, { recursive: true });
@@ -62,6 +63,15 @@ export async function POST(req: NextRequest) {
     const primaryCss = colors.primary;
     const bgCss = colors.background;
     console.log(`  Primary: ${primaryCss}, Background: ${bgCss}`);
+
+    // Step 2.5: Extract page content
+    console.log("📝 Extracting page content...");
+    const content = await extractPageContent(page);
+
+    // Use extracted content or fall back to user input
+    const finalTagline = tagline || content.subHeading || safeDesc;
+    const finalSubhead = subhead || content.benefits[0] || "";
+    const extractedFeatures = content.features.slice(0, 4);
 
     // Step 3: Discover additional pages
     const discoveredPages = await discoverPages(page, targetUrl, 6);
@@ -314,10 +324,10 @@ export async function POST(req: NextRequest) {
       </h1>
 
       <p class="text-xl md:text-2xl text-white/90 leading-relaxed fade-in-up" style="transition-delay: 0.2s;">
-        ${tagline || safeDesc}
+        ${finalTagline}
       </p>
 
-      ${subhead ? `<p class="text-lg text-white/70 fade-in-up" style="transition-delay: 0.3s;">${subhead}</p>` : ""}
+      ${finalSubhead ? `<p class="text-lg text-white/70 fade-in-up" style="transition-delay: 0.3s;">${finalSubhead}</p>` : ""}
 
       <!-- CTA Buttons -->
       <div class="flex flex-col sm:flex-row gap-4 pt-4 fade-in-up" style="transition-delay: 0.4s;">
