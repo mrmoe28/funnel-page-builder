@@ -74,7 +74,14 @@ export async function POST(req: NextRequest) {
     // Use extracted content or fall back to user input
     const finalTagline = tagline || content.subHeading || safeDesc;
     const finalSubhead = subhead || content.benefits[0] || "";
-    const extractedFeatures = content.features.slice(0, 4);
+
+    // Combine features and benefits for "Why Choose" section
+    const whyChooseItems = [
+      ...content.features.slice(0, 3),
+      ...content.benefits.slice(0, 3),
+    ].slice(0, 4); // Take up to 4 items total
+
+    console.log(`  Extracted ${whyChooseItems.length} features/benefits for "Why Choose" section`);
 
     // Step 3: Discover additional pages
     const discoveredPages = await discoverPages(page, targetUrl, 6);
@@ -440,6 +447,35 @@ export async function POST(req: NextRequest) {
           Why Choose ${appName}?
         </h2>
         <div class="space-y-4">
+          ${
+            whyChooseItems.length > 0
+              ? whyChooseItems
+                  .map(
+                    (item, idx) => {
+                      // Define gradient colors and icons for each item
+                      const gradients = [
+                        "from-purple-500 to-pink-500",
+                        "from-blue-500 to-cyan-500",
+                        "from-green-500 to-emerald-500",
+                        "from-orange-500 to-red-500",
+                      ];
+                      const icons = ["✓", "⚡", "🎯", "📱"];
+
+                      return `
+          <div class="flex items-start gap-4 group">
+            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br ${gradients[idx % 4]} flex items-center justify-center text-white font-bold group-hover:scale-110 transition-transform">
+              ${icons[idx % 4]}
+            </div>
+            <div>
+              <p class="text-white/90 text-base leading-relaxed">${item}</p>
+            </div>
+          </div>
+                      `;
+                    }
+                  )
+                  .join("")
+              : `
+          <!-- Fallback: Generic features if extraction failed -->
           <div class="flex items-start gap-4 group">
             <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold group-hover:scale-110 transition-transform">
               ✓
@@ -465,20 +501,12 @@ export async function POST(req: NextRequest) {
               🎯
             </div>
             <div>
-              <h3 class="font-semibold text-lg">Track Everything</h3>
-              <p class="text-white/70">UTM parameters preserved for perfect attribution</p>
-            </div>
-          </div>
-
-          <div class="flex items-start gap-4 group">
-            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-bold group-hover:scale-110 transition-transform">
-              📱
-            </div>
-            <div>
               <h3 class="font-semibold text-lg">Mobile Ready</h3>
               <p class="text-white/70">Looks perfect on every device</p>
             </div>
           </div>
+              `
+          }
         </div>
       </div>
 
