@@ -30,6 +30,8 @@ export default function Home() {
   const [subhead, setSubhead] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
+  const [whyChooseItems, setWhyChooseItems] = useState<string[]>(["", "", "", ""]);
+  const [generatingAI, setGeneratingAI] = useState(false);
   const [slug, setSlug] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -46,6 +48,30 @@ export default function Home() {
       throw new Error(text || "Request failed");
     }
     return r.json();
+  };
+
+  const generateWithAI = async () => {
+    if (!appName || !targetUrl) {
+      setMsg("App Name and URL are required for AI generation");
+      return;
+    }
+    setGeneratingAI(true);
+    setMsg("🔍 Analyzing website and GitHub repository...");
+    
+    try {
+      const data = await call("/api/generate-why-choose", {
+        appName,
+        targetUrl,
+        tagline,
+        subhead,
+      });
+      setWhyChooseItems(data.items || ["", "", "", ""]);
+      setMsg("✓ AI generated 'Why Choose' items from website analysis!");
+    } catch (e: any) {
+      setMsg("Error generating AI content: " + (e.message || "Failed"));
+    } finally {
+      setGeneratingAI(false);
+    }
   };
 
   const generate = async () => {
@@ -82,6 +108,7 @@ export default function Home() {
         subhead,
         logoUrl,
         uploadedImages: uploadedImagesBase64,
+        whyChooseItems: whyChooseItems.filter(item => item.trim() !== ""),
       });
       setSlug(data.slug);
       setPreviewUrl(data.previewUrl);
@@ -243,6 +270,56 @@ export default function Home() {
                   value={subhead}
                   onChange={(e) => setSubhead(e.target.value)}
                 />
+              </div>
+
+              {/* Why Choose Section */}
+              <div className="space-y-3 rounded-lg border-2 border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/20 p-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-semibold">
+                    ✨ Why Choose {appName || "Your App"}?
+                  </Label>
+                  <Button
+                    type="button"
+                    onClick={generateWithAI}
+                    disabled={generatingAI || !appName || !targetUrl}
+                    variant="outline"
+                    size="sm"
+                    className="h-8"
+                  >
+                    {generatingAI ? (
+                      <>
+                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-1 h-3 w-3" />
+                        AI Generate
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Add up to 4 key benefits or features. AI will analyze your website and GitHub repository to generate relevant content.
+                  {targetUrl && targetUrl.includes('github.com') && (
+                    <span className="ml-1 text-green-600 font-medium">🔗 GitHub repo detected!</span>
+                  )}
+                </p>
+                <div className="space-y-2">
+                  {whyChooseItems.map((item, index) => (
+                    <Input
+                      key={index}
+                      placeholder={`Feature/Benefit ${index + 1}`}
+                      value={item}
+                      onChange={(e) => {
+                        const newItems = [...whyChooseItems];
+                        newItems[index] = e.target.value;
+                        setWhyChooseItems(newItems);
+                      }}
+                      className="bg-background"
+                    />
+                  ))}
+                </div>
               </div>
 
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
