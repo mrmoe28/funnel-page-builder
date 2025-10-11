@@ -374,18 +374,20 @@ export async function POST(req: NextRequest) {
   </section>
 
   ${
-    screenshots.length > 1
+    screenshots.length > 1 || uploadedImagePaths.length > 0
       ? `
-  <!-- Additional Pages Gallery -->
+  <!-- Gallery Section: Additional Pages + Uploaded Images -->
   <section class="mt-16">
     <h2 class="text-3xl font-bold mb-8 text-center fade-in-up">
-      More Pages from ${appName}
+      ${screenshots.length > 1 ? "More from" : "Featured Images for"} ${appName}
     </h2>
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      ${screenshots
-        .slice(1)
-        .map(
-          (screenshot, idx) => `
+      ${
+        // First show additional scraped pages (skip homepage)
+        screenshots
+          .slice(1)
+          .map(
+            (screenshot, idx) => `
         <div class="scale-in" style="transition-delay: ${(idx + 1) * 0.1}s;">
           <div class="glass rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
             <img src="${screenshot.desktopPath}" alt="${screenshot.title}" class="w-full h-auto" />
@@ -395,34 +397,26 @@ export async function POST(req: NextRequest) {
           </div>
         </div>
       `
-        )
-        .join("")}
-    </div>
-  </section>
-  `
-      : ""
-  }
-
-  ${
-    uploadedImagePaths.length > 0
-      ? `
-  <!-- Custom Uploaded Images Section -->
-  <section class="mt-16">
-    <h2 class="text-3xl font-bold mb-8 text-center fade-in-up">
-      Featured Images
-    </h2>
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      ${uploadedImagePaths
-        .map(
-          (imagePath, idx) => `
-        <div class="scale-in" style="transition-delay: ${(idx + 1) * 0.1}s;">
+          )
+          .join("")
+      }
+      ${
+        // Then show uploaded images
+        uploadedImagePaths
+          .map(
+            (imagePath, idx) => `
+        <div class="scale-in" style="transition-delay: ${(screenshots.length + idx) * 0.1}s;">
           <div class="glass rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
             <img src="${imagePath}" alt="Featured Image ${idx + 1}" class="w-full h-auto" />
+            <div class="p-4">
+              <p class="text-sm font-semibold text-white/90">Custom Image ${idx + 1}</p>
+            </div>
           </div>
         </div>
       `
-        )
-        .join("")}
+          )
+          .join("")
+      }
     </div>
   </section>
   `
