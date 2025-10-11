@@ -3,6 +3,7 @@ import React from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import { FunnelHistorySidebar } from "@/components/FunnelHistorySidebar";
+import { LayoutWrapper } from "@/components/LayoutWrapper";
 
 export const metadata = {
   title: "Funnel Page Builder",
@@ -26,9 +27,9 @@ export default function RootLayout({
         >
           <Navbar />
           <FunnelHistorySidebar />
-          <main className="container mx-auto px-6 py-8 ml-80 transition-all duration-300">
+          <LayoutWrapper>
             {children}
-          </main>
+          </LayoutWrapper>
         </ThemeProvider>
       </body>
     </html>

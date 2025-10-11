@@ -154,20 +154,20 @@ export default function Home() {
   return (
     <div className="space-y-8">
       {/* Hero Section */}
-      <div className="space-y-3 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500">
-          <Wand2 className="h-8 w-8 text-white" />
+      <div className="space-y-4 text-center">
+        <div className="mx-auto flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500">
+          <Wand2 className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
         </div>
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
           Create Your Funnel Page
         </h1>
-        <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+        <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground px-4">
           Paste any URL and we'll automatically generate a beautiful, conversion-optimized splash page with screenshots
         </p>
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-2">
         {/* Configuration Card */}
         <Card>
           <CardHeader>
@@ -336,7 +336,7 @@ export default function Home() {
         </Card>
 
         {/* Preview Card */}
-        <Card className="lg:sticky lg:top-6 lg:self-start">
+        <Card className="xl:sticky xl:top-6 xl:self-start">
           <CardHeader>
             <CardTitle>Live Preview</CardTitle>
             <CardDescription>

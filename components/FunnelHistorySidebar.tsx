@@ -21,6 +21,16 @@ export function FunnelHistorySidebar({ onSelectFunnel }: FunnelHistorySidebarPro
   const [history, setHistory] = useState<FunnelHistoryItem[]>([]);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  const toggleSidebar = () => {
+    const newState = !isCollapsed;
+    setIsCollapsed(newState);
+    
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent('sidebarToggle', {
+      detail: { isCollapsed: newState }
+    }));
+  };
+
   // Load history from localStorage
   useEffect(() => {
     const loadHistory = () => {
@@ -76,18 +86,33 @@ export function FunnelHistorySidebar({ onSelectFunnel }: FunnelHistorySidebarPro
 
   return (
     <aside
-      className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-background/95 backdrop-blur-xl border-r border-border/50 transition-all duration-300 z-40 ${
-        isCollapsed ? "w-0" : "w-80"
+      className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-background/95 backdrop-blur-xl border-r border-border/50 transition-all duration-300 z-40 hidden md:block ${
+        isCollapsed ? "w-16" : "w-80"
       }`}
     >
       {/* Toggle Button */}
       <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
+        onClick={toggleSidebar}
         className="absolute -right-4 top-4 w-8 h-8 rounded-full glass flex items-center justify-center hover:scale-110 transition-transform z-50"
       >
         {isCollapsed ? "→" : "←"}
       </button>
 
+      {/* Collapsed State - Show only icon */}
+      {isCollapsed && (
+        <div className="flex flex-col h-full items-center py-4">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 mb-4">
+            <Sparkles className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="text-xs font-bold text-primary">{history.length}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Expanded State */}
       {!isCollapsed && (
         <div className="flex flex-col h-full">
           {/* Header */}

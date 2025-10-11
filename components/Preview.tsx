@@ -49,37 +49,37 @@ export default function Preview({ href }: { href?: string }) {
   return (
     <div className="mt-6 overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10">
       {/* Toolbar */}
-      <div className="glass border-b border-border/50 px-4 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="glass border-b border-border/50 px-2 sm:px-4 py-2 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Button
             size="sm"
             variant="ghost"
-            className="h-8 px-3"
+            className="h-8 px-2 sm:px-3"
             onClick={goBack}
             disabled={!canGoBack}
           >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Back
+            <ArrowLeft className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Back</span>
           </Button>
           <Button
             size="sm"
             variant="ghost"
-            className="h-8 px-3"
+            className="h-8 px-2 sm:px-3"
             onClick={reset}
           >
-            <RotateCcw className="h-4 w-4 mr-1" />
-            Reset
+            <RotateCcw className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Reset</span>
           </Button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground truncate max-w-xs">
+        <div className="flex items-center gap-1 sm:gap-2">
+          <span className="text-xs text-muted-foreground truncate max-w-[120px] sm:max-w-xs hidden sm:inline">
             {href}
           </span>
           <Button
             size="sm"
             variant="ghost"
-            className="h-8 px-3"
+            className="h-8 px-2 sm:px-3"
             onClick={openInNew}
           >
             <ExternalLink className="h-4 w-4" />
@@ -91,7 +91,7 @@ export default function Preview({ href }: { href?: string }) {
       <iframe
         ref={ref}
         src={href}
-        className="h-[720px] w-full bg-white"
+        className="h-[400px] sm:h-[500px] md:h-[600px] lg:h-[720px] w-full bg-white"
         title="Funnel Preview"
       />
     </div>
